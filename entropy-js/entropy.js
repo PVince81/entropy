@@ -444,10 +444,6 @@ function init(canvas) {
             document.body.clientHeight;
     }
 
-    // border !?
-    clientWidth -= 2;
-    clientHeight -= 2;
-
     actualWidth = config.screenSize[0]; 
     actualHeight = config.screenSize[1]; 
 
