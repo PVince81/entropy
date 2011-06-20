@@ -1,0 +1,13 @@
+Entropy
+
+By Vincent Petry <PVince81@yahoo.fr>
+
+Bouncing balls with minimal physics.
+
+
+
+Entropy requires pygame.
+
+You can change the configuration by editing the config.py file.
+
+The accelerometer feature currently only works on the Nokia N900.
