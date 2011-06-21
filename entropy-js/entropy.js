@@ -33,7 +33,8 @@ Config = {
     friction : 1.01,
     strengthCoef : 0.03,
     particleCount : 100,
-    colorList : null
+    colorList : null,
+    viewClass : "View"
 }
 
 Color = function(r, g, b) {
@@ -255,7 +256,8 @@ GameEngine = function(canvas,config) {
     this.canvas = canvas;
     this.model = new Model(config);
     this.model.generateParticles();
-    this.view = new View(canvas, this.model, config);
+    var viewClass = window[config.viewClass];
+    this.view = new viewClass(canvas, this.model, config);
     this.controller = new Controller(Config, this.model);
     this.timer = null;
    

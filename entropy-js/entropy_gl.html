@@ -1,0 +1,56 @@
+<html>
+<head><title>Entropy - by Vincent Petry</title>
+    <script language="JavaScript" type="text/javascript" src="prototype.js"></script>
+    <script language="JavaScript" type="text/javascript" src="entropy.js"></script>
+    <script language="JavaScript" type="text/javascript" src="entropy_gl.js"></script>
+    <script type="text/javascript" src="glMatrix-0.9.5.min.js"></script>
+    <style>
+        html, body {
+            width:  100%;
+            height: 100%;
+            margin: 0px;
+            padding: 0px;
+        }
+    </style>
+</head>
+<body onload="init($('gameCanvas'));">
+<canvas id="gameCanvas" width="200" height="200">HTML5 canvas not supported !</canvas>
+<!-- <div style="clear: both; font-size: 8pt; text-align: center;">By Vincent Petry using the HTML5 canvas</div> -->
+
+<script type="text/javascript">
+    Config.viewClass = "GLView";
+    Config.particleCount = 1000;
+</script>
+
+<script id="shader-fs" type="x-shader/x-fragment">
+    #ifdef GL_ES
+    precision highp float;
+    #endif
+
+    varying vec4 vColor;
+
+    void main(void)
+    {
+      gl_FragColor = vColor;
+//      gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+    }
+</script>
+
+<script id="shader-vs" type="x-shader/x-vertex">
+    attribute vec3 aVertexPosition;
+    attribute vec4 aVertexColor;
+
+    uniform mat4 uMVMatrix;
+    uniform mat4 uPMatrix;
+
+    varying vec4 vColor;
+    
+    void main(void)
+    {
+        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+        vColor = aVertexColor;
+    }
+</script>
+
+</body>
+</html>
