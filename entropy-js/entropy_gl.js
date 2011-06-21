@@ -40,7 +40,8 @@ GLView = function(canvas, model, config) {
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
 //        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, this._pMatrix);
         mat4.ortho(0, gl.viewportWidth, gl.viewportHeight, 0, 0, 1, this._pMatrix);
-        gl.clearColor(0, 0.5, 0.5, 1.0); // TODO: parse from config
+        var clearColor = new Color(config.backgroundColor);
+        gl.clearColor(clearColor.r, clearColor.g, clearColor.b, 1.0);
     } catch (e) {
         alert(e);
     }
@@ -62,6 +63,7 @@ GLView.prototype = {
 
     _mvMatrix : null,
     _pMatrix : null,
+    _texCoords : null,
 
     _blockVertexBuf : null,
 
@@ -70,30 +72,13 @@ GLView.prototype = {
         var particles = this.model.particles;
         for ( var i = 0; i < particles.length; i++ ) {
             var particle = particles[i];
-            if ( particle.color.colorBuf ) {
-                continue;
-            }
-            
-            var colorArray = [particle.color.r / 255.0, particle.color.g / 255.0, particle.color.b / 255.0, 1.0];
-
-            var vertexColors = [];
-            // one color per vertex
-            for ( var v = 0; v < 4; v++ ) {
-                vertexColors = vertexColors.concat(colorArray);
-            }
-
-            var colorBuf = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, colorBuf);
-            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexColors), gl.STATIC_DRAW);
-            colorBuf.itemSize = 4;
-            colorBuf.numItems = vertexColors.length / colorBuf.itemSize;
-            particle.color.colorBuf = colorBuf;
+            particle.color.glColor = [particle.color.r / 255.0, particle.color.g / 255.0, particle.color.b / 255.0, 1.0];
         }
     },
 
     render : function() {
         var gl = this.context;
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.clear(gl.COLOR_BUFFER_BIT);
 
         mat4.identity(this._mvMatrix);
 
@@ -102,6 +87,11 @@ GLView.prototype = {
             this._shaderProgram.vertexPositionAttribute,
             this._blockVertexBuf.itemSize, gl.FLOAT, false, 0, 0);
 
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.texCoords);
+        gl.vertexAttribPointer(
+            this._shaderProgram.aTextureCoord,
+            this.texCoords.itemSize, gl.FLOAT, false, 0, 0);
+
         var particles = this.model.particles;
         for ( var i = 0; i < particles.length; i++ ) {
             var particle = particles[i];
@@ -109,15 +99,8 @@ GLView.prototype = {
             mat4.translate(this._mvMatrix, [particle.x - particle.radius, particle.y - particle.radius, 0.0]);
             var d = particle.radius * 2.0;
             mat4.scale(this._mvMatrix,[d,d,0.0]);
-        
-            var colorBuf = particle.color.colorBuf;
-            gl.bindBuffer(gl.ARRAY_BUFFER, colorBuf);
-//            gl.vertexAttrib4fv(this._shaderProgram.aColor, [1.0,0.0,0.0,1.0]);
-
-            gl.vertexAttribPointer(
-                this._shaderProgram.aColor,
-                colorBuf.itemSize, gl.FLOAT, false, 0, 0);
-
+            
+            gl.uniform4fv(this._shaderProgram.aColor, particle.color.glColor);
             this._setMatrixUniforms();
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, this._blockVertexBuf.numItems);
         }
@@ -143,6 +126,19 @@ GLView.prototype = {
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
         this._blockVertexBuf.itemSize = 3;
         this._blockVertexBuf.numItems = vertices.length / 3;
+
+        this.texCoords = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.texCoords);
+        var texCoords = [
+            0.0, 0.0,
+            1.0, 0.0,
+            0.0, 1.0,
+            1.0, 1.0
+        ];
+        gl.bufferData(gl.ARRAY_BUFFER, Float32Array(texCoords),
+                gl.STATIC_DRAW); 
+        this.texCoords.itemSize = 2;
+        this.texCoords.numItems = texCoords.length;
     },
 
     _getShader : function(gl, id) {
@@ -200,10 +196,11 @@ GLView.prototype = {
         this._shaderProgram.vertexPositionAttribute = gl.getAttribLocation(this._shaderProgram, "aVertexPosition");
         gl.enableVertexAttribArray(this._shaderProgram.vertexPositionAttribute);
 
-        this._shaderProgram.aColor = gl.getAttribLocation(this._shaderProgram, "aVertexColor");
-        gl.enableVertexAttribArray(this._shaderProgram.aColor);
-
         this._shaderProgram.pMatrixUniform = gl.getUniformLocation(this._shaderProgram, "uPMatrix");
         this._shaderProgram.mvMatrixUniform = gl.getUniformLocation(this._shaderProgram, "uMVMatrix");
+        this._shaderProgram.aColor = gl.getUniformLocation(this._shaderProgram, "aColor");
+
+        this._shaderProgram.aTextureCoord = gl.getAttribLocation(this._shaderProgram, "aTextureCoord");
+        gl.enableVertexAttribArray(this._shaderProgram.aTextureCoord);
     }
 }

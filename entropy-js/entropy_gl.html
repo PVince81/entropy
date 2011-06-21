@@ -19,7 +19,7 @@
 
 <script type="text/javascript">
     Config.viewClass = "GLView";
-    Config.particleCount = 1000;
+    Config.particleCount = 100;
 </script>
 
 <script id="shader-fs" type="x-shader/x-fragment">
@@ -27,28 +27,37 @@
     precision highp float;
     #endif
 
-    varying vec4 vColor;
+    uniform vec4 aColor;
+
+    varying vec2 vTextureCoord;
+//    uniform sampler2D tex;
 
     void main(void)
     {
-      gl_FragColor = vColor;
-//      gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+        // Calculate distance to circle center
+        float d = distance(vTextureCoord, vec2(0.5, 0.5));
+        // Discard fragments regarding the distance to the center.
+        if ( d > 0.5 )
+        {
+            discard;
+        }
+        gl_FragColor = aColor;
     }
 </script>
 
 <script id="shader-vs" type="x-shader/x-vertex">
     attribute vec3 aVertexPosition;
-    attribute vec4 aVertexColor;
+    attribute vec2 aTextureCoord;
 
     uniform mat4 uMVMatrix;
     uniform mat4 uPMatrix;
 
-    varying vec4 vColor;
-    
+    varying vec2 vTextureCoord;
+
     void main(void)
     {
         gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
-        vColor = aVertexColor;
+        vTextureCoord = aTextureCoord;
     }
 </script>
 
