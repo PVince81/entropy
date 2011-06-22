@@ -31,9 +31,25 @@ GLView = function(canvas, model, config) {
     mat4.identity(this._pMatrix);
     mat4.identity(this._mvMatrix);
 
-    var gl;
+    var gl = null;
     try {
-        gl = this.canvas.getContext("experimental-webgl");
+        gl = this.canvas.getContext("webgl");
+        if ( gl == null ) {
+            gl = this.canvas.getContext("experimental-webgl");
+            if ( gl == null ) {
+                alert("WebGL not supported !");
+                return;
+            }
+        }
+
+        // test for older versions
+        try { 
+            var test = new Float32Array([]);
+        }
+        catch (e) {
+            Float32Array = WebGLFloatArray;
+        }
+        
         this.context = gl;
         gl.viewportWidth = this.canvas.width;
         gl.viewportHeight = this.canvas.height;
@@ -48,11 +64,11 @@ GLView = function(canvas, model, config) {
     
     if (!gl) {
         alert("Could not initialise WebGL!");
+        return;
     }
 
     this._initShaders();
     this._initBuffers();
-
     this._initColors();
 }
 
@@ -122,8 +138,9 @@ GLView.prototype = {
           0.0, 1.0, 0.0,
           1.0, 1.0, 0.0
         ];
-
+       
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+
         this._blockVertexBuf.itemSize = 3;
         this._blockVertexBuf.numItems = vertices.length / 3;
 
@@ -135,7 +152,8 @@ GLView.prototype = {
             0.0, 1.0,
             1.0, 1.0
         ];
-        gl.bufferData(gl.ARRAY_BUFFER, Float32Array(texCoords),
+
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords),
                 gl.STATIC_DRAW); 
         this.texCoords.itemSize = 2;
         this.texCoords.numItems = texCoords.length;
