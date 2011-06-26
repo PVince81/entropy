@@ -31,41 +31,29 @@ GLView = function(canvas, model, config) {
     mat4.identity(this._pMatrix);
     mat4.identity(this._mvMatrix);
 
-    var gl = null;
-    try {
-        gl = this.canvas.getContext("webgl");
-        if ( gl == null ) {
-            gl = this.canvas.getContext("experimental-webgl");
-            if ( gl == null ) {
-                alert("WebGL not supported !");
-                return;
-            }
-        }
-
-        // test for older versions
-        try { 
-            var test = new Float32Array([]);
-        }
-        catch (e) {
-            Float32Array = WebGLFloatArray;
-        }
-        
-        this.context = gl;
-        gl.viewportWidth = this.canvas.width;
-        gl.viewportHeight = this.canvas.height;
-        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-//        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, this._pMatrix);
-        mat4.ortho(0, gl.viewportWidth, gl.viewportHeight, 0, 0, 1, this._pMatrix);
-        var clearColor = new Color(config.backgroundColor);
-        gl.clearColor(clearColor.r, clearColor.g, clearColor.b, 1.0);
-    } catch (e) {
-        alert(e);
-    }
-    
-    if (!gl) {
-        alert("Could not initialise WebGL!");
+    var gl = this._createContext();
+    if ( !gl ) {
+        alert("Couldn't initialize WebGL !");
         return;
     }
+
+    // test for older versions
+    try { 
+        var test = new Float32Array([]);
+    }
+    catch (e) {
+        Float32Array = WebGLFloatArray;
+    }
+    
+    this.context = gl;
+    gl.viewportWidth = this.canvas.width;
+    gl.viewportHeight = this.canvas.height;
+    gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+//        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, this._pMatrix);
+    mat4.ortho(0, gl.viewportWidth, gl.viewportHeight, 0, 0, 1, this._pMatrix);
+    var clearColor = new Color(config.backgroundColor);
+    gl.clearColor(clearColor.r, clearColor.g, clearColor.b, 1.0);
+    gl.disable(gl.DEPTH_TEST);
 
     this._initShaders();
     this._initBuffers();
@@ -82,6 +70,27 @@ GLView.prototype = {
     _texCoords : null,
 
     _blockVertexBuf : null,
+
+    _createContext : function() {
+        var gl = null;
+        var errors = "";
+        try {
+            gl = this.canvas.getContext("webgl");
+            if ( gl != null ) {
+               return gl;
+            }
+        }
+        catch ( e ) {
+        }
+       
+        try { 
+            gl = this.canvas.getContext("experimental-webgl");
+        }
+        catch ( e ) {
+        }
+
+        return gl;
+    },
 
     _initColors : function() {
         var gl = this.context;
