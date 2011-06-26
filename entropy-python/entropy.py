@@ -183,6 +183,12 @@ def render():
         fpsSurface = font.render("FPS: %d" % currentFps, False, (255,255,255)) 
         screen.blit(fpsSurface, (0, config.screenSize[1] - fontHeight))
 
+    # Draw mouse pointer
+    pointerColor = pointerColors[action]
+    pygame.draw.line(screen, pointerColor, ( target[0] - 5, target[1] - 5), ( target[0] + 5, target[1] + 5 ))
+    pygame.draw.line(screen, pointerColor, ( target[0] + 5, target[1] - 5 ), ( target[0] - 5, target[1] + 5 ))
+
+
 def logic():
     for pixel in pixels:
         if config.weightEnabled:
@@ -353,10 +359,23 @@ for i in range(config.particleCount):
 
 setMessage("%d particles\nPress H for help" % config.particleCount)
 
+pygame.mouse.set_visible(False)
+pointerColors = [
+    (255, 255, 255),
+    (0, 255, 0),
+    (255, 0, 0),
+    (0, 0, 255)
+]
+
+frameNumber = 0
+
 while not terminated : 
     input(pygame.event.get()) 
     logic()
     render()
+    if config.videoOut:
+        pygame.image.save(screen, config.videoOut % frameNumber)
+        frameNumber += 1
     pygame.display.flip()
     clock.tick(config.fps)
 
