@@ -1,0 +1,9 @@
+Entropy
+
+By Vincent Petry <PVince81@yahoo.fr>
+
+Bouncing balls with minimal physics.
+
+
+The WebGL version is using glMatrix from http://code.google.com/p/glmatrix/
+

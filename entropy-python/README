@@ -6,7 +6,7 @@ Bouncing balls with minimal physics.
 
 
 
-Entropy requires pygame.
+Entropy requires pygame (http://www.pygame.org/)
 
 You can change the configuration by editing the config.py file.
 

@@ -1,0 +1,20 @@
+Entropy
+
+By Vincent Petry <PVince81@yahoo.fr>
+
+Bouncing balls with minimal physics.
+
+
+Entropy comes in two versions:
+1) Python version
+
+The Python version was developed using Pygame (http://www.pygame.org/)
+
+2) HTML5 version
+
+The HTML5 version has two renderers, one uses the regular drawing functions of
+the HTML5 canvas (entropy.html) and the other one uses WebGL (entroy_gl.html).
+
+I have found out that the WebGL version is as smooth as the Python version with
+1000 particles.
+
