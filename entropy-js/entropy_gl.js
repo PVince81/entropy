@@ -54,6 +54,13 @@ GLView = function(canvas, model, config) {
     var clearColor = new Color(config.backgroundColor);
     gl.clearColor(clearColor.r, clearColor.g, clearColor.b, 1.0);
     gl.disable(gl.DEPTH_TEST);
+    if ( config.transparency ) {
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    }
+    else {
+        gl.disable(gl.BLEND);
+    }
 
     this._initShaders();
     this._initBuffers();
@@ -97,7 +104,7 @@ GLView.prototype = {
         var particles = this.model.particles;
         for ( var i = 0; i < particles.length; i++ ) {
             var particle = particles[i];
-            particle.color.glColor = [particle.color.r / 255.0, particle.color.g / 255.0, particle.color.b / 255.0, 1.0];
+            particle.color.glColor = [particle.color.r / 255.0, particle.color.g / 255.0, particle.color.b / 255.0, 1000.0];
         }
     },
 
