@@ -427,6 +427,8 @@ function init(canvas) {
     if ( params["height"] ) config.screenSize[1] = parseInt(params["height"]);
     if ( params["fps"] ) config.fps = parseInt(params["fps"]);
     if ( params["particles"] ) config.particleCount = parseInt(params["particles"]);
+    if ( params["minradius"] ) config.minRadius = parseInt(params["minradius"]);
+    if ( params["maxradius"] ) config.maxRadius = parseInt(params["maxradius"]);
     if ( params["gravity"] ) config.gravityEnabled = params["gravity"].toLowerCase() == "true"
 
     var clientWidth;
