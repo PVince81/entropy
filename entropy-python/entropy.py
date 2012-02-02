@@ -48,7 +48,7 @@ def initDisplay():
         flags = pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF
 
     pygame.display.set_mode(config.screenSize, flags)
-    pygame.display.set_caption('Pygame test') 
+    pygame.display.set_caption('Entropy') 
     screen = pygame.display.get_surface()
 
 

@@ -1,0 +1,27 @@
+<html>
+<head><title>Entropy - by Vincent Petry</title>
+    <script language="JavaScript" type="text/javascript" src="prototype.js"></script>
+    <script language="JavaScript" type="text/javascript" src="entropy.js"></script>
+    <script language="JavaScript" type="text/javascript" src="entropy_css3.js"></script>
+    <style>
+        html, body {
+            width:  100%;
+            height: 100%;
+            margin: 0px;
+            padding: 0px;
+            background-color: black;
+        }
+
+        .particle {
+            position: absolute;
+        }
+    </style>
+</head>
+<body onload="init(document.body);">
+    <script type="text/javascript">
+            Config.viewClass = "CSSView";
+            Config.particleCount = 100;
+            Config.fps = 60;
+    </script>
+</body>
+</html>
