@@ -18,3 +18,8 @@ the HTML5 canvas (entropy.html) and the other one uses WebGL (entroy_gl.html).
 I have found out that the WebGL version is as smooth as the Python version with
 1000 particles.
 
+3) CSS version
+
+The CSS version is using absolute SPAN elements and modifies their position dynamically.
+These elements have a CSS3 radial gradient applied to them.
+
