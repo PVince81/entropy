@@ -26,6 +26,7 @@ import math
 from config import Config
 from pygame.locals import *
 from pygame import Surface
+import mice
 
 class Pixel:
     def __init__(self, x, y, color, radius = 1):
@@ -48,7 +49,7 @@ def initDisplay():
         flags = pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF
 
     pygame.display.set_mode(config.screenSize, flags)
-    pygame.display.set_caption('Pygame test') 
+    pygame.display.set_caption('Entropy') 
     screen = pygame.display.get_surface()
 
 
@@ -57,7 +58,6 @@ def input(events):
     global terminated
     global gravity
     global action
-    global target
 
     # Update gravity using accelerometer data
     if config.accelerometerEnabled:
@@ -65,17 +65,15 @@ def input(events):
         gravity = ( -accel[0], -accel[1] )
 
     # Update action and target using mouse position and buttons
-    (button1, button2, button3)= pygame.mouse.get_pressed()
-    action = 0
-    mods = pygame.key.get_mods()
-    
-    if button1:
-        action = 1
-    if button2 or (button1 and mods & KMOD_CTRL):
-        action = 3
-    if button3 or (button1 and mods & KMOD_SHIFT):
-        action = 2
-    target = pygame.mouse.get_pos()
+    for mouse in mice.get_mice():
+        mods = pygame.key.get_mods()
+        action[mouse.index] = 0
+        if mouse.buttons[0]:
+            action[mouse.index] = 1
+        if mouse.buttons[1] or (mouse.buttons[0] and mods & KMOD_CTRL):
+            action[mouse.index] = 3
+        if mouse.buttons[2] or (mouse.buttons[0] and mods & KMOD_SHIFT):
+            action[mouse.index] = 2
 
     # Process events
     for event in events: 
@@ -184,42 +182,50 @@ def render():
         screen.blit(fpsSurface, (0, config.screenSize[1] - fontHeight))
 
     # Draw mouse pointer
-    pointerColor = pointerColors[action]
-    pygame.draw.line(screen, pointerColor, ( target[0] - 5, target[1] - 5), ( target[0] + 5, target[1] + 5 ))
-    pygame.draw.line(screen, pointerColor, ( target[0] + 5, target[1] - 5 ), ( target[0] - 5, target[1] + 5 ))
+    for mouse in mice.get_mice():
+        if not mouse.connected:
+            continue
+        target = [mouse.x, mouse.y]
+        pointerColor = pointerColors[action[mouse.index]]
+        pygame.draw.line(screen, pointerColor, ( target[0] - 5, target[1] - 5), ( target[0] + 5, target[1] + 5 ))
+        pygame.draw.line(screen, pointerColor, ( target[0] + 5, target[1] - 5 ), ( target[0] - 5, target[1] + 5 ))
 
 
 def logic():
+    # Apply forces
+    for mouse in mice.get_mice():
+        for pixel in pixels:
+            # Apply action forces
+            if action[mouse.index]:
+                vector = ( mouse.x - pixel.x, mouse.y - pixel.y )
+                # normalize the vector
+                length = math.sqrt(vector[0] ** 2 + vector[1] ** 2)
+                vector = (vector[0] / length, vector[1] / length)
+                strength = length / 10.0
+                if strength > 1.0:
+                    strength = 1.0
+                pixel.colorChange = strength
+
+                if action[mouse.index] == 3:
+                    # circle force
+                    pixel.vx -= vector[1] * strength
+                    pixel.vy += vector[0] * strength
+
+                    #pixel.vx += vector[0] * strength
+                    #pixel.vy += vector[1] * strength
+                else:
+                    # attraction or repulsion
+                    if action == 2:
+                        strength = -strength
+                    pixel.vx += vector[0] * strength
+                    pixel.vy += vector[1] * strength
+
+    # Apply gravity and Move balls    
     for pixel in pixels:
         if config.weightEnabled:
             weight = pixel.weight
         else:
             weight = 1.0
-        # Apply action forces
-        if action:
-            vector = ( target[0] - pixel.x, target[1] - pixel.y )
-            # normalize the vector
-            length = math.sqrt(vector[0] ** 2 + vector[1] ** 2)
-            vector = (vector[0] / length, vector[1] / length)
-            strength = length / 10.0
-            if strength > 1.0:
-                strength = 1.0
-            pixel.colorChange = strength
-
-            if action == 3:
-                # circle force
-                pixel.vx -= vector[1] * strength
-                pixel.vy += vector[0] * strength
-
-                #pixel.vx += vector[0] * strength
-                #pixel.vy += vector[1] * strength
-            else:
-                # attraction or repulsion
-                if action == 2:
-                    strength = -strength
-                pixel.vx += vector[0] * strength
-                pixel.vy += vector[1] * strength
-
         # Apply gravity
         if config.gravityEnabled:
             pixel.vx += gravity[0] * weight
@@ -254,7 +260,7 @@ def logic():
                 pixel.currentcolor[i] = c
             pixel.color = (int(pixel.currentcolor[0]),int(pixel.currentcolor[1]),int(pixel.currentcolor[2]))
             pixel.colorChange -= 0.01
-    
+
 
     global messageDelay
     if messageDelay > 0:
@@ -308,12 +314,23 @@ def setNumParticles(num):
     config.particleCount = len(pixels)
 
 config = Config()
+if config.accelerometerEnabled:
+    from accelerometer import Accelerometer
+    try:
+        accelerometer = Accelerometer()
+    except:
+        print "Accelerometer not found, disabling"
+        accelerometer = None
+        config.accelerometerEnabled = False
+
+mice.init(config.screenSize[0], config.screenSize[1])
 pygame.init() 
 initDisplay()
-#player_surface = pygame.image.load("player.png")
 
-target = (0, 0)
-action = 0
+if config.fullscreen:
+    pygame.event.set_grab(True)
+
+action = [0] * len(mice.get_mice())
 bkg_color = (0, 0, 0)
 clock = pygame.time.Clock()
 maxX = config.screenSize[0] - 1
@@ -343,15 +360,6 @@ helpMessage = "Help:\n\
 
 gravity = config.gravity
 
-if config.accelerometerEnabled:
-    from accelerometer import Accelerometer
-    try:
-        accelerometer = Accelerometer()
-    except:
-        print "Accelerometer not found, disabling"
-        accelerometer = None
-        config.accelerometerEnabled = False
-
 #pxarray = pygame.PixelArray (screen)
 pixels = []
 for i in range(config.particleCount):
@@ -368,8 +376,8 @@ pointerColors = [
 ]
 
 frameNumber = 0
-
 while not terminated : 
+    mice.update(config.screenSize[0], config.screenSize[1])
     input(pygame.event.get()) 
     logic()
     render()
@@ -379,4 +387,5 @@ while not terminated :
     pygame.display.flip()
     clock.tick(config.fps)
 
+mice.quit()
 pygame.quit() 

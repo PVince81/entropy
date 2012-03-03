@@ -11,3 +11,7 @@ Entropy requires pygame (http://www.pygame.org/)
 You can change the configuration by editing the config.py file.
 
 The accelerometer feature currently only works on the Nokia N900.
+
+It is possible to use multiple mice if pymanymouse is installed.
+You might have to set the PYTHONPATH to point to the directory
+where pymanymouse is installed.

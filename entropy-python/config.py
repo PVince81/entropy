@@ -2,7 +2,7 @@ class Config:
     def __init__(self):
         self.screenSize = (1280,800)
         self.fullscreen = True
-        self.fps = 24
+        self.fps = 60
         self.minRadius = 5
         self.maxRadius = 15
         self.gravity = (0.0, 0.2)
