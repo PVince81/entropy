@@ -344,8 +344,8 @@ helpMessage = "Help:\n\
 gravity = config.gravity
 
 if config.accelerometerEnabled:
-    from accelerometer import Accelerometer
     try:
+        from accelerometer import Accelerometer
         accelerometer = Accelerometer()
     except:
         print "Accelerometer not found, disabling"
